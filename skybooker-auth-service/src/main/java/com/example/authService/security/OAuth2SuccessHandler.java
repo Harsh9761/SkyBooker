@@ -48,7 +48,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             userRepository.save(user);
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(
+        	    user.getEmail(),
+        	    user.getRole().name(),
+        	    user.getUserId().intValue()
+        	);
 
         // Redirect with token
         response.sendRedirect("http://localhost:4200/oauth-success?token=" + token);

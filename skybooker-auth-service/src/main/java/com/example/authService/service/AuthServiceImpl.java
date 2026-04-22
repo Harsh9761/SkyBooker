@@ -43,7 +43,11 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(
+        	    user.getEmail(),
+        	    user.getRole().name(),
+        	    user.getUserId().intValue()
+        	);
 
         return new AuthResponse(token, user.getRole().name(), user.getUserId());
     }
@@ -63,7 +67,11 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Account is deactivated");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(
+        	    user.getEmail(),
+        	    user.getRole().name(),
+        	    user.getUserId().intValue()
+        	);
 
         return new AuthResponse(token, user.getRole().name(), user.getUserId());
     }
@@ -90,7 +98,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String newToken = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String newToken = jwtUtil.generateToken(
+        	    user.getEmail(),
+        	    user.getRole().name(),
+        	    user.getUserId().intValue()
+        	);
 
         return new AuthResponse(newToken, user.getRole().name(), user.getUserId());
     }

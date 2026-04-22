@@ -14,12 +14,17 @@ public class JwtUtil {
     private static final String SECRET = "mysecretkeymysecretkeymysecretkey123";
     private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, String role, Integer userId) {
+
+        long EXPIRATION = 1000 * 60 * 60 * 24;
+
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
+                .claim("userId", userId)
+                .setIssuer("SkyBooker")
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(key)
                 .compact();
     }
