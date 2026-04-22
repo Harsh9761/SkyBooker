@@ -1,13 +1,13 @@
-package com.example.airlineService;
+package com.example.api_gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AirlineServiceApplication {
+public class SkyBookerApiGatewayApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AirlineServiceApplication.class, args);
+		SpringApplication.run(SkyBookerApiGatewayApplication.class, args);
 	}
 
 }
