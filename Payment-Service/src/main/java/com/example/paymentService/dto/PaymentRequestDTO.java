@@ -1,5 +1,7 @@
 package com.example.paymentService.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -8,7 +10,7 @@ import jakarta.validation.constraints.Positive;
 public class PaymentRequestDTO {
 
 	@NotNull(message = "Booking ID is required")
-    private Long bookingId;
+    private UUID bookingId;
 
     @NotNull(message = "User ID is required")
     private Long userId;
@@ -29,8 +31,8 @@ public class PaymentRequestDTO {
 
     public PaymentRequestDTO() {}
 
-    public Long getBookingId() { return bookingId; }
-    public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
+    public UUID getBookingId() { return bookingId; }
+    public void setBookingId(UUID bookingId) { this.bookingId = bookingId; }
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }

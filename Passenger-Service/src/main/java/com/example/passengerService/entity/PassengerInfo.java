@@ -2,6 +2,7 @@ package com.example.passengerService.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "passengers")
@@ -11,7 +12,7 @@ public class PassengerInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long passengerId;
 
-    private Long bookingId;
+    private UUID bookingId;
 
     private String title;
     private String firstName;
@@ -37,8 +38,8 @@ public class PassengerInfo {
     public Long getPassengerId() { return passengerId; }
     public void setPassengerId(Long passengerId) { this.passengerId = passengerId; }
 
-    public Long getBookingId() { return bookingId; }
-    public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
+    public UUID getBookingId() { return bookingId; }
+    public void setBookingId(UUID bookingId) { this.bookingId = bookingId; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

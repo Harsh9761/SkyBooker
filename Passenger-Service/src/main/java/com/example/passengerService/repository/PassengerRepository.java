@@ -5,10 +5,11 @@ import com.example.passengerService.entity.PassengerInfo;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface PassengerRepository extends JpaRepository<PassengerInfo, Long> {
 
-    List<PassengerInfo> findByBookingId(Long bookingId);
+    List<PassengerInfo> findByBookingId(UUID bookingId);
 
     Optional<PassengerInfo> findByPassengerId(Long passengerId);
 
@@ -18,7 +19,7 @@ public interface PassengerRepository extends JpaRepository<PassengerInfo, Long> 
 
     List<PassengerInfo> findBySeatId(Long seatId);
 
-    long countByBookingId(Long bookingId);
+    long countByBookingId(UUID bookingId);
 
-    void deleteByBookingId(Long bookingId);
+    void deleteByBookingId(UUID bookingId);
 }

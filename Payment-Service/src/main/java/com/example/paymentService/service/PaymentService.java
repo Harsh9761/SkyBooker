@@ -12,7 +12,7 @@ public interface PaymentService {
 
     PaymentResponseDTO processPayment(UUID paymentId, String transactionId, String status);
 
-    List<PaymentResponseDTO> getPaymentByBooking(Long bookingId);
+    List<PaymentResponseDTO> getPaymentByBooking(UUID bookingId);
 
     List<PaymentResponseDTO> getPaymentsByUser(Long userId);
 

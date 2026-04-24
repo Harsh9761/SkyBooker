@@ -3,6 +3,8 @@ package com.example.passengerService.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.passengerService.client.BookingClient;
+import com.example.passengerService.dto.BookingDTO;
 import com.example.passengerService.dto.PassengerDTO;
 import com.example.passengerService.entity.PassengerInfo;
 import com.example.passengerService.entity.PassengerType;
@@ -18,14 +20,41 @@ public class PassengerServiceImpl implements PassengerService {
 
     @Autowired
     private PassengerRepository repository;
+    
+    private final BookingClient bookingClient;
+    public PassengerServiceImpl(BookingClient bookingClient) {
+    			this.bookingClient = bookingClient;
+    }
+
 
     // ADD PASSENGER
     @Override
     public PassengerDTO addPassenger(PassengerDTO dto) {
 
+        //Booking fetch 
+        BookingDTO booking = bookingClient.getBooking(dto.getBookingId());
+
+        if (booking == null) {
+            throw new RuntimeException("Booking not found");
+        }
+
+        // Booking status check
+        if (!"PENDING".equalsIgnoreCase(booking.getStatus())) {
+            throw new RuntimeException("Cannot add passenger, booking not in Pending state");
+        }
+
+        //  Seat from booking 
+        String seat = booking.getSeatNumber();
+
+        if (seat == null) {
+            throw new RuntimeException("Seat not assigned in booking");
+        }
+
         PassengerInfo p = new PassengerInfo();
 
+        // link
         p.setBookingId(dto.getBookingId());
+
         p.setTitle(dto.getTitle());
         p.setFirstName(dto.getFirstName());
         p.setLastName(dto.getLastName());
@@ -35,13 +64,17 @@ public class PassengerServiceImpl implements PassengerService {
         p.setPassportExpiry(dto.getPassportExpiry().toString());
         p.setNationality(dto.getNationality());
 
-        // Ticket number generate
+        // seat always booking se
+        p.setSeatNumber(seat);
+
+        //Ticket number generate
         p.setTicketNumber(generateTicketNumber());
 
-        // Passenger Type calculate
+        //Passenger Type calculate
         p.setPassengerType(calculatePassengerType(dto.getDateOfBirth()));
 
         PassengerInfo saved = repository.save(p);
+
         return mapToDTO(saved);
     }
 
@@ -55,7 +88,7 @@ public class PassengerServiceImpl implements PassengerService {
 
     //GET BY BOOKING
     @Override
-    public List<PassengerDTO> getPassengersByBooking(Long bookingId) {
+    public List<PassengerDTO> getPassengersByBooking(UUID bookingId) {
         return repository.findByBookingId(bookingId)
                 .stream()
                 .map(this::mapToDTO)
@@ -97,7 +130,7 @@ public class PassengerServiceImpl implements PassengerService {
 
     // COUNT
     @Override
-    public long getPassengerCount(Long bookingId) {
+    public long getPassengerCount(UUID bookingId) {
         return repository.countByBookingId(bookingId);
     }
 

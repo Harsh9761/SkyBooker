@@ -164,6 +164,22 @@ public class SeatServiceImpl implements SeatService {
 
         return list;
     }
+    
+    @Override
+    public SeatResponseDTO lockSeat(Long flightId, String seatNumber) {
+
+        Seat seat = seatRepository
+                .findByFlightIdAndSeatNumber(flightId, seatNumber)
+                .orElseThrow(() -> new RuntimeException("Seat not found"));
+
+        if (seat.getStatus() != SeatStatus.HELD) {
+            throw new RuntimeException("Seat must be HELD before confirmation");
+        }
+
+        seat.setStatus(SeatStatus.CONFIRMED);
+
+        return mapToDTO(seatRepository.save(seat));
+    }
 
 	
 }

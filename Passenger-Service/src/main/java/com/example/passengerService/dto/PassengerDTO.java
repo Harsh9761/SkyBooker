@@ -1,6 +1,7 @@
 package com.example.passengerService.dto;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +14,7 @@ public class PassengerDTO {
 	private Long passengerId;
 
     @NotNull(message = "Booking ID is required")
-    private Long bookingId;
+    private UUID bookingId;
 
     @NotBlank(message = "Title is required")
     private String title;
@@ -54,7 +55,7 @@ public class PassengerDTO {
         return passengerId;
     }
 
-    public Long getBookingId() {
+    public UUID getBookingId() {
         return bookingId;
     }
 
@@ -112,7 +113,7 @@ public class PassengerDTO {
         this.passengerId = passengerId;
     }
 
-    public void setBookingId(Long bookingId) {
+    public void setBookingId(UUID bookingId) {
         this.bookingId = bookingId;
     }
 

@@ -18,4 +18,8 @@ public interface SeatClient {
             @RequestParam Long flightId,
             @RequestParam String seatNumber
     );
+
+    @PostMapping("/seats/lock")
+    void lockSeat(@RequestParam Long flightId,
+                  @RequestParam String seatNumber);
 }

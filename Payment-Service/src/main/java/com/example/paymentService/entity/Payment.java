@@ -6,15 +6,18 @@ import java.util.UUID;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
 public class Payment {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
     private UUID paymentId;
 
-    private Long bookingId;
+    private UUID bookingId;
     private Long userId;
 
     private Double amount;
@@ -45,11 +48,11 @@ public class Payment {
         this.paymentId = paymentId;
     }
 
-    public Long getBookingId() {
+    public UUID getBookingId() {
         return bookingId;
     }
 
-    public void setBookingId(Long bookingId) {
+    public void setBookingId(UUID bookingId) {
         this.bookingId = bookingId;
     }
 

@@ -2,6 +2,7 @@ package com.example.passengerService.service;
 
 import com.example.passengerService.dto.PassengerDTO;
 import java.util.List;
+import java.util.UUID;
 
 public interface PassengerService {
 
@@ -9,7 +10,7 @@ public interface PassengerService {
 
     PassengerDTO getPassengerById(Long passengerId);
 
-    List<PassengerDTO> getPassengersByBooking(Long bookingId);
+    List<PassengerDTO> getPassengersByBooking(UUID bookingId);
 
     PassengerDTO getByPassportNumber(String passportNumber);
 
@@ -19,7 +20,7 @@ public interface PassengerService {
 
     String generateTicketNumber();
 
-    long getPassengerCount(Long bookingId);
+    long getPassengerCount(UUID bookingId);
 
     void deletePassenger(Long passengerId);
 }

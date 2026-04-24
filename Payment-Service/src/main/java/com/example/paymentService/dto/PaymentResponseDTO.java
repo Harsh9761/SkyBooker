@@ -6,7 +6,7 @@ import java.util.UUID;
 public class PaymentResponseDTO {
 
     private UUID paymentId;
-    private Long bookingId;
+    private UUID bookingId;
     private Long userId;
     private Double amount;
     private String currency;
@@ -20,8 +20,8 @@ public class PaymentResponseDTO {
     public UUID getPaymentId() { return paymentId; }
     public void setPaymentId(UUID paymentId) { this.paymentId = paymentId; }
 
-    public Long getBookingId() { return bookingId; }
-    public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
+    public UUID getBookingId() { return bookingId; }
+    public void setBookingId(UUID bookingId) { this.bookingId = bookingId; }
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }

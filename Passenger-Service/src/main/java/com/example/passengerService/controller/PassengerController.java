@@ -8,6 +8,7 @@ import com.example.passengerService.service.PassengerService;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/passengers")
@@ -30,7 +31,7 @@ public class PassengerController {
 
     // GET BY BOOKING ID
     @GetMapping("/booking/{bookingId}")
-    public List<PassengerDTO> getByBooking(@PathVariable Long bookingId) {
+    public List<PassengerDTO> getByBooking(@PathVariable UUID bookingId) {
         return service.getPassengersByBooking(bookingId);
     }
 
@@ -57,7 +58,7 @@ public class PassengerController {
 
     // GET COUNT BY BOOKING
     @GetMapping("/count/{bookingId}")
-    public long getCount(@PathVariable Long bookingId) {
+    public long getCount(@PathVariable UUID bookingId) {
         return service.getPassengerCount(bookingId);
     }
 

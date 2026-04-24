@@ -24,4 +24,10 @@ public interface BookingService {
     BookingResponseDTO addAddOn(UUID bookingId, String meal, Integer luggageKg);
 
     List<BookingResponseDTO> getUpcomingBookings(Long userId);
+    
+    PaymentResponseDTO startPayment(UUID bookingId, String method);
+
+    BookingResponseDTO completePayment(UUID paymentId,
+                                       String transactionId,
+                                       String status);
 }

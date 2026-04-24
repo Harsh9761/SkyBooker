@@ -84,4 +84,17 @@ public class BookingController {
 
         return user + " | " + userId + " | " + role;
     }
+    
+    @PostMapping("/{bookingId}/pay")
+    public PaymentResponseDTO pay(@PathVariable UUID bookingId,
+                                 @RequestParam String method) {
+        return bookingService.startPayment(bookingId, method);
+    }
+    
+    @PostMapping("/payment/callback")
+    public BookingResponseDTO callback(@RequestParam UUID paymentId,
+                                       @RequestParam String transactionId,
+                                       @RequestParam String status) {
+        return bookingService.completePayment(paymentId, transactionId, status);
+    }
 }

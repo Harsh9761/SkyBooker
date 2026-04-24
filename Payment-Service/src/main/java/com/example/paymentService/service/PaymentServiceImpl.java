@@ -5,6 +5,7 @@ import java.util.*;
 
 import org.springframework.stereotype.Service;
 
+import com.example.paymentService.client.BookingClient;
 import com.example.paymentService.dto.*;
 import com.example.paymentService.entity.*;
 import com.example.paymentService.repository.PaymentRepository;
@@ -13,9 +14,11 @@ import com.example.paymentService.repository.PaymentRepository;
 public class PaymentServiceImpl implements PaymentService {
 
     private PaymentRepository repository;
+    private BookingClient bookingClient;
 
-    public PaymentServiceImpl(PaymentRepository repository) {
+    public PaymentServiceImpl(PaymentRepository repository,BookingClient bookingClient) {
         this.repository = repository;
+        this.bookingClient =bookingClient;
     }
 
     @Override
@@ -23,7 +26,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment payment = new Payment();
 
-        payment.setPaymentId(UUID.randomUUID());
+        payment.setBookingId(request.getBookingId());
 
         payment.setBookingId(request.getBookingId());
         payment.setUserId(request.getUserId());
@@ -48,16 +51,29 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
 
         payment.setTransactionId(transactionId);
-        payment.setStatus(PaymentStatus.valueOf(status.toUpperCase()));
+
+        PaymentStatus ps = PaymentStatus.valueOf(status.toUpperCase());
+        payment.setStatus(ps);
+
         payment.setPaidAt(LocalDateTime.now());
 
         repository.save(payment);
+
+        //AUTO CALLBACK
+        if (ps == PaymentStatus.PAID || ps == PaymentStatus.FAILED) {
+
+            bookingClient.callback(
+                    payment.getPaymentId(),
+                    transactionId,
+                    ps.name()
+            );
+        }
 
         return mapToDTO(payment);
     }
 
     @Override
-    public List<PaymentResponseDTO> getPaymentByBooking(Long bookingId) {
+    public List<PaymentResponseDTO> getPaymentByBooking(UUID bookingId) {
         return mapList(repository.findByBookingId(bookingId));
     }
 

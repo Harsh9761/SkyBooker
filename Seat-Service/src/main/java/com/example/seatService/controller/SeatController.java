@@ -76,4 +76,10 @@ public class SeatController {
     public void deleteSeatsByFlight(@PathVariable Long flightId) {
         seatService.deleteSeatsByFlight(flightId);
     }
+    
+    @PostMapping("/seats/lock")
+    public SeatResponseDTO lockSeat(@RequestParam Long flightId,
+                                    @RequestParam String seatNumber) {
+        return seatService.lockSeat(flightId, seatNumber);
+    }
 }

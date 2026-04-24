@@ -38,7 +38,7 @@ public class PaymentController {
     }
 
     @GetMapping("/booking/{bookingId}")
-    public List<PaymentResponseDTO> getByBooking(@PathVariable Long bookingId) {
+    public List<PaymentResponseDTO> getByBooking(@PathVariable UUID bookingId) {
         return service.getPaymentByBooking(bookingId);
     }
 

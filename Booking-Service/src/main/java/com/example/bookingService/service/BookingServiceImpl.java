@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.bookingService.client.FlightClient;
+import com.example.bookingService.client.PaymentClient;
 import com.example.bookingService.client.SeatClient;
 import com.example.bookingService.dto.*;
 import com.example.bookingService.entity.*;
@@ -18,61 +20,91 @@ import com.example.bookingService.repository.BookingRepository;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
+    private final PaymentClient paymentClient;
 
-    public BookingServiceImpl(BookingRepository bookingRepository) {
+    public BookingServiceImpl(BookingRepository bookingRepository,PaymentClient paymentClient) {
         this.bookingRepository = bookingRepository;
+        this.paymentClient = paymentClient;
     }
     
     @Autowired
     private SeatClient seatClient;
+    
+    @Autowired
+    private FlightClient flightClient;
 
     //CREATE BOOKING
     @Override
     public BookingResponseDTO createBooking(BookingRequestDTO request) {
 
+        // Fare calculate
         FareSummaryDTO fare = calculateFare(request.getFlightId(), request.getLuggageKg());
-        
+
         try {
             System.out.println("CALLING SEAT SERVICE");
 
+            // HOLD seat
             seatClient.holdSeat(
-                request.getFlightId(),
-                request.getSeatNumber(),
-                String.valueOf(request.getUserId())
+                    request.getFlightId(),
+                    request.getSeatNumber(),
+                    String.valueOf(request.getUserId())
             );
-           
-            System.out.println("SEAT SERVICE CALLED SUCCESSFULLY");
+
+            // Flight seat count decrease
+            flightClient.decrementSeat(request.getFlightId());
+
+            System.out.println("SEAT HOLD SUCCESS");
 
         } catch (Exception e) {
-            e.printStackTrace(); //  VERY IMPORTANT
-            throw new RuntimeException(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Seat hold failed");
         }
 
-        Booking booking = new Booking();
-        booking.setUserId(request.getUserId());
-        booking.setFlightId(request.getFlightId());
-        booking.setSeatNumber(request.getSeatNumber());
-        booking.setPnrCode(generatePnr());
-        booking.setTripType(TripType.valueOf(request.getTripType()));
-        booking.setStatus(BookingStatus.PENDING);
+        try {
+            // Create booking
+            Booking booking = new Booking();
 
-        booking.setBaseFare(fare.getBaseFare());
-        booking.setTaxes(fare.getTaxes());
-        booking.setTotalFare(fare.getTotalFare());
+            booking.setUserId(request.getUserId());
+            booking.setFlightId(request.getFlightId());
+            booking.setSeatNumber(request.getSeatNumber());
+            booking.setPnrCode(generatePnr());
+            booking.setTripType(TripType.valueOf(request.getTripType()));
+            booking.setStatus(BookingStatus.PENDING);
 
-        booking.setMealPreference(request.getMealPreference());
-        booking.setLuggageKg(request.getLuggageKg());
+            booking.setBaseFare(fare.getBaseFare());
+            booking.setTaxes(fare.getTaxes());
+            booking.setTotalFare(fare.getTotalFare());
 
-        booking.setContactEmail(request.getContactEmail());
-        booking.setContactPhone(request.getContactPhone());
+            booking.setMealPreference(request.getMealPreference());
+            booking.setLuggageKg(request.getLuggageKg());
 
-        booking.setBookedAt(LocalDateTime.now());
+            booking.setContactEmail(request.getContactEmail());
+            booking.setContactPhone(request.getContactPhone());
 
-        Booking saved = bookingRepository.save(booking);
+            booking.setBookedAt(LocalDateTime.now());
 
-        return mapToResponse(saved);
+            Booking saved = bookingRepository.save(booking);
+
+            return mapToResponse(saved);
+
+        } catch (Exception e) {
+
+            // ROLLBACK (VERY IMPORTANT)
+            try {
+                seatClient.releaseSeat(
+                        request.getFlightId(),
+                        request.getSeatNumber()
+                );
+
+                flightClient.incrementSeat(request.getFlightId());
+
+            } catch (Exception ex) {
+                System.out.println("Rollback failed: " + ex.getMessage());
+            }
+
+            throw new RuntimeException("Booking failed, rollback done");
+        }
     }
-
     // GET BY ID 
     @Override
     public BookingResponseDTO getBookingById(UUID bookingId) {
@@ -190,5 +222,71 @@ public class BookingServiceImpl implements BookingService {
         dto.setTotalFare(booking.getTotalFare());
         dto.setSeatNumber(booking.getSeatNumber());
         return dto;
+    }
+    
+    
+    public PaymentResponseDTO startPayment(UUID bookingId, String method) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new RuntimeException("Booking not in valid state");
+        }
+
+        PaymentRequestDTO req = new PaymentRequestDTO();
+
+        req.setBookingId(bookingId);
+        req.setUserId(booking.getUserId());
+        req.setAmount(booking.getTotalFare());
+        req.setCurrency("INR");
+
+        try {
+            req.setPaymentMode(PaymentMode.valueOf(method.toUpperCase()));
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid payment method");
+        }
+
+        return paymentClient.initiate(req);
+    }
+    
+    @Override
+    public BookingResponseDTO completePayment(UUID paymentId,
+                                              String transactionId,
+                                              String status) {
+
+        PaymentResponseDTO res =
+                paymentClient.process(paymentId, transactionId, status);
+
+        Booking booking = bookingRepository.findById(res.getBookingId())
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        //SUCCESS CASE
+        if ("PAID".equalsIgnoreCase(res.getStatus())) {
+
+            booking.setStatus(BookingStatus.CONFIRMED);
+
+            
+            seatClient.lockSeat(
+                    booking.getFlightId(),
+                    booking.getSeatNumber()
+            );
+
+        } else {
+
+            
+            booking.setStatus(BookingStatus.CANCELLED);
+
+            seatClient.releaseSeat(
+                    booking.getFlightId(),
+                    booking.getSeatNumber()
+            );
+
+            flightClient.incrementSeat(booking.getFlightId());
+        }
+
+        bookingRepository.save(booking);
+
+        return mapToResponse(booking);
     }
 }
