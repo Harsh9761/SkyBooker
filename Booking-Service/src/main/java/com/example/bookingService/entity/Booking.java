@@ -37,7 +37,7 @@ public class Booking {
 
     private LocalDateTime bookedAt;
 
-    private String paymentId;
+    private UUID paymentId;
     private String seatNumber;
 
     //Constructors
@@ -48,7 +48,7 @@ public class Booking {
     public Booking(UUID bookingId, Long userId, Long flightId, String pnrCode, TripType tripType,
                    BookingStatus status, Double totalFare, Double baseFare, Double taxes,
                    String mealPreference, Integer luggageKg, String contactEmail,
-                   String contactPhone, LocalDateTime bookedAt, String paymentId) {
+                   String contactPhone, LocalDateTime bookedAt, UUID paymentId) {
         this.bookingId = bookingId;
         this.userId = userId;
         this.flightId = flightId;
@@ -180,11 +180,11 @@ public class Booking {
         this.bookedAt = bookedAt;
     }
 
-    public String getPaymentId() {
+    public UUID getPaymentId() {
         return paymentId;
     }
 
-    public void setPaymentId(String paymentId) {
+    public void setPaymentId(UUID paymentId) {
         this.paymentId = paymentId;
     }
 

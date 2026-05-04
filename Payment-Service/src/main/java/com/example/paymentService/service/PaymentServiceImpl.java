@@ -2,13 +2,19 @@ package com.example.paymentService.service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.paymentService.client.BookingClient;
 import com.example.paymentService.dto.*;
 import com.example.paymentService.entity.*;
 import com.example.paymentService.repository.PaymentRepository;
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -20,28 +26,50 @@ public class PaymentServiceImpl implements PaymentService {
         this.repository = repository;
         this.bookingClient =bookingClient;
     }
+    
+    @Value("${razorpay.key_id}")
+    private String keyId;
+
+    @Value("${razorpay.key_secret}")
+    private String keySecret;
 
     @Override
     public PaymentResponseDTO initiatePayment(PaymentRequestDTO request) {
 
-        Payment payment = new Payment();
+        try {
 
-        payment.setBookingId(request.getBookingId());
+            RazorpayClient client = new RazorpayClient(keyId, keySecret);
 
-        payment.setBookingId(request.getBookingId());
-        payment.setUserId(request.getUserId());
-        payment.setAmount(request.getAmount());
-        payment.setCurrency(request.getCurrency());
+            JSONObject options = new JSONObject();
+            options.put("amount", (int) Math.round(request.getAmount() * 100));
+            options.put("currency", request.getCurrency());
+            
+            String receiptId = "txn_" + System.currentTimeMillis();
+            options.put("receipt", receiptId);
 
-        payment.setPaymentMode(
-                PaymentMode.valueOf(request.getPaymentMode().toUpperCase())
-        );
+            Order order = client.orders.create(options);
 
-        payment.setStatus(PaymentStatus.PENDING);
+            Payment payment = new Payment();
+            payment.setBookingId(request.getBookingId());
+            payment.setUserId(request.getUserId());
+            payment.setAmount(request.getAmount());
+            payment.setCurrency(request.getCurrency().trim().toUpperCase());
 
-        repository.save(payment);
+            // SAFE ENUM HANDLING
+            payment.setPaymentMode(
+                PaymentMode.valueOf(request.getPaymentMode().trim().toUpperCase())
+            );
 
-        return mapToDTO(payment);
+            payment.setStatus(PaymentStatus.PENDING);
+            payment.setTransactionId(order.get("id"));
+
+            repository.save(payment);
+
+            return mapToDTO(payment);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Payment initiation failed: " + e.getMessage());
+        }
     }
 
     @Override
@@ -59,14 +87,24 @@ public class PaymentServiceImpl implements PaymentService {
 
         repository.save(payment);
 
-        //AUTO CALLBACK
         if (ps == PaymentStatus.PAID || ps == PaymentStatus.FAILED) {
 
-            bookingClient.callback(
-                    payment.getPaymentId(),
-                    transactionId,
-                    ps.name()
-            );
+        	try {
+        	    System.out.println(" CALLING BOOKING CALLBACK");
+
+        	    bookingClient.callback(
+        	        payment.getBookingId(),
+        	        payment.getPaymentId(),
+        	        transactionId,
+        	        ps.name()
+        	    );
+
+        	    System.out.println("CALLBACK SUCCESS");
+
+        	} catch (Exception e) {
+        	    System.out.println(" CALLBACK FAILED");
+        	    e.printStackTrace(); //  IMPORTANT
+        	}
         }
 
         return mapToDTO(payment);
@@ -84,10 +122,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponseDTO refundPayment(UUID paymentId) {
-
+    	System.out.println("hello2");
         Payment payment = repository.findByPaymentId(paymentId)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
-
+        
+        if (payment.getStatus() == PaymentStatus.REFUNDED) {
+            throw new RuntimeException("Already refunded");
+        }
         payment.setStatus(PaymentStatus.REFUNDED);
         payment.setRefundAmount(payment.getAmount());
         payment.setRefundedAt(LocalDateTime.now());

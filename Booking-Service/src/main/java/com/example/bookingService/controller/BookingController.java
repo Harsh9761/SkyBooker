@@ -92,9 +92,12 @@ public class BookingController {
     }
     
     @PostMapping("/payment/callback")
-    public BookingResponseDTO callback(@RequestParam UUID paymentId,
-                                       @RequestParam String transactionId,
-                                       @RequestParam String status) {
-        return bookingService.completePayment(paymentId, transactionId, status);
+    public BookingResponseDTO callback(
+        @RequestParam UUID bookingId,
+        @RequestParam UUID paymentId,
+        @RequestParam String transactionId,
+        @RequestParam String status
+    ) {
+        return bookingService.completePayment(bookingId, paymentId, transactionId, status);
     }
 }

@@ -12,7 +12,8 @@ import com.example.paymentService.dto.BookingResponseDTO;
 public interface BookingClient {
 
     @PostMapping("/bookings/payment/callback")
-    BookingResponseDTO callback(@RequestParam UUID paymentId,
+    BookingResponseDTO callback(@RequestParam UUID bookingId,
+    							@RequestParam UUID paymentId,
                                @RequestParam String transactionId,
                                @RequestParam String status);
 }

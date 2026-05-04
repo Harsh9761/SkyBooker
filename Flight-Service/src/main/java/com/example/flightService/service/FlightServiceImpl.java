@@ -192,4 +192,11 @@ public class FlightServiceImpl implements FlightService {
                 .map(this::mapToDTO)
                 .toList();
     }
+    
+    public List<FlightDTO> getAllFlights() {
+        return flightRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
 }

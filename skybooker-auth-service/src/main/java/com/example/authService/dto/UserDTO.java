@@ -10,7 +10,7 @@ public class UserDTO {
     public String passportNumber;
     public String nationality;
     
-	public void setUserId(Long userId2) {
+    public void setUserId(Long userId2) {
 		this.userId = userId2;
 		
 	}
@@ -39,6 +39,15 @@ public class UserDTO {
 		this.nationality = nationality2;
 	}
 	
+	public String getFullName() {
+		return fullName;
+	}
 	
+	public Long getUserId() {
+		return userId;
+	}
 	
+	public String getRole() {
+		return role;
+	}
 }

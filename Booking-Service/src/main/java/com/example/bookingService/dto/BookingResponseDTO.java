@@ -9,15 +9,21 @@ public class BookingResponseDTO {
     private String status;
     private Double totalFare;
     private String seatNumber;
+    private String contactEmail;
+    private String contactPhone;
+    private UUID paymentId;
 
     public BookingResponseDTO() {
     }
 
-    public BookingResponseDTO(UUID bookingId, String pnrCode, String status, Double totalFare) {
+    public BookingResponseDTO(UUID bookingId, String pnrCode, String status, Double totalFare,String contactEmail,String contactPhone,UUID paymentId) {
         this.bookingId = bookingId;
         this.pnrCode = pnrCode;
         this.status = status;
         this.totalFare = totalFare;
+        this.contactEmail = contactEmail;
+        this.contactPhone = contactPhone;
+        this.paymentId = paymentId;
     }
 
     public UUID getBookingId() {
@@ -59,4 +65,30 @@ public class BookingResponseDTO {
 	public void setSeatNumber(String seatNumber) {
 		this.seatNumber = seatNumber;
 	}
+
+	public String getContactEmail() {
+		return contactEmail;
+	}
+
+	public void setContactEmail(String contactEmail) {
+		this.contactEmail = contactEmail;
+	}
+
+	public String getContactPhone() {
+		return contactPhone;
+	}
+
+	public void setContactPhone(String contactPhone) {
+		this.contactPhone = contactPhone;
+	}
+
+	public UUID getPaymentId() {
+		return paymentId;
+	}
+
+	public void setPaymentId(UUID paymentId) {
+		this.paymentId = paymentId;
+	}
+
+	
 }

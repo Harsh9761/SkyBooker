@@ -1,6 +1,6 @@
 package com.example.passengerService.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import com.example.passengerService.client.BookingClient;
@@ -18,12 +18,13 @@ import java.util.stream.Collectors;
 @Service
 public class PassengerServiceImpl implements PassengerService {
 
-    @Autowired
-    private PassengerRepository repository;
-    
+	private final PassengerRepository repository;
     private final BookingClient bookingClient;
-    public PassengerServiceImpl(BookingClient bookingClient) {
-    			this.bookingClient = bookingClient;
+
+    public PassengerServiceImpl(BookingClient bookingClient,
+                                 PassengerRepository repository) {
+        this.bookingClient = bookingClient;
+        this.repository = repository;
     }
 
 

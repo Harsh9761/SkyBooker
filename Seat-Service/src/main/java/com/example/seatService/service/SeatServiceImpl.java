@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -88,6 +89,8 @@ public class SeatServiceImpl implements SeatService {
         }
         System.out.println("DB STATUS = " + seat.getStatus());
         seat.setStatus(SeatStatus.HELD);
+        
+        seat.setHeldAt(LocalDateTime.now());
 
         return mapToDTO(seatRepository.save(seat));
     }
@@ -172,13 +175,32 @@ public class SeatServiceImpl implements SeatService {
                 .findByFlightIdAndSeatNumber(flightId, seatNumber)
                 .orElseThrow(() -> new RuntimeException("Seat not found"));
 
-        if (seat.getStatus() != SeatStatus.HELD) {
-            throw new RuntimeException("Seat must be HELD before confirmation");
-        }
+//        if (seat.getStatus() != SeatStatus.HELD) {
+//            throw new RuntimeException("Seat must be HELD before confirmation");
+//        }
 
         seat.setStatus(SeatStatus.CONFIRMED);
 
         return mapToDTO(seatRepository.save(seat));
+    }
+    
+    
+    @Override
+    public void cancelSeat(Long flightId, String seatNumber) {
+
+        Seat seat = seatRepository
+                .findByFlightIdAndSeatNumber(flightId, seatNumber)
+                .orElseThrow(() -> new RuntimeException("Seat not found"));
+
+        //Sirf CONFIRMED seat hi cancel ho sakti hai
+//        if (seat.getStatus() != SeatStatus.CONFIRMED) {
+//            throw new RuntimeException("Only confirmed seats can be cancelled");
+//        }
+
+        // Cancel - AVAILABLE
+        seat.setStatus(SeatStatus.AVAILABLE);
+
+        seatRepository.save(seat);
     }
 
 	

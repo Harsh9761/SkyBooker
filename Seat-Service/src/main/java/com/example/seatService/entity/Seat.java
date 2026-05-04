@@ -1,5 +1,7 @@
 package com.example.seatService.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -27,6 +29,8 @@ public class Seat {
 
     @Enumerated(EnumType.STRING)
     private SeatStatus status;
+    
+    private LocalDateTime heldAt;
 
     // ===== Constructors =====
     public Seat() {}
@@ -137,4 +141,12 @@ public class Seat {
     public void setStatus(SeatStatus status) {
         this.status = status;
     }
+
+	public LocalDateTime getHeldAt() {
+		return heldAt;
+	}
+
+	public void setHeldAt(LocalDateTime heldAt) {
+		this.heldAt = heldAt;
+	}
 }

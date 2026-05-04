@@ -25,4 +25,6 @@ public interface SeatService {
 	SeatResponseDTO releaseSeat(Long flightId, String seatNumber);
 
 	SeatResponseDTO lockSeat(Long flightId, String seatNumber);
+
+	void cancelSeat(Long flightId, String seatNumber);
 }

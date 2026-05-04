@@ -1,5 +1,6 @@
 package com.example.notificationService.controller;
 
+import com.example.notificationService.dto.BookingNotificationDto;
 import com.example.notificationService.entity.Notification;
 import com.example.notificationService.repository.NotificationRepository;
 import com.example.notificationService.service.NotifService;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/notifications")
@@ -55,5 +57,18 @@ public class NotifResource {
     @GetMapping("/all")
     public List<Notification> getAll() {
         return repo.findAll();
+    }
+    
+    @PostMapping("/booking-confirmation")
+    public Map<String, String> sendBookingConfirmation(@RequestBody BookingNotificationDto dto) {
+
+        service.sendBookingConfirmation(
+                dto.getUserId(),
+                dto.getBookingId(),
+                dto.getEmail(),
+                dto.getPhone()
+        );
+
+        return Map.of("message", "Booking notification sent");
     }
 }

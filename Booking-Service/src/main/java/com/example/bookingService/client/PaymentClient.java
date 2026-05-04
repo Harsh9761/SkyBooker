@@ -3,6 +3,7 @@ package com.example.bookingService.client;
 import java.util.UUID;
 
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,4 +21,6 @@ public interface PaymentClient {
     PaymentResponseDTO process(@RequestParam UUID paymentId,
                                @RequestParam String transactionId,
                                @RequestParam String status);
+    @PostMapping("/payments/refund/{paymentId}")
+    PaymentResponseDTO refundPayment(@PathVariable UUID paymentId);
 }

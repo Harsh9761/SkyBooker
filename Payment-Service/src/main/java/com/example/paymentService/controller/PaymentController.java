@@ -10,6 +10,7 @@ import com.example.paymentService.service.PaymentService;
 
 import jakarta.validation.Valid;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
@@ -21,7 +22,8 @@ public class PaymentController {
     }
 
     @PostMapping("/initiate")
-    public PaymentResponseDTO initiate(@Valid @RequestBody PaymentRequestDTO request) {
+    public PaymentResponseDTO initiate(@RequestBody PaymentRequestDTO request) {
+    	System.out.println("PAYLOAD RECEIVED: " + request.toString());
         return service.initiatePayment(request);
     }
 

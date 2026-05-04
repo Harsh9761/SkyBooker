@@ -110,6 +110,10 @@ public class User {
 		// TODO Auto-generated method stub
 		return userId;
 	}
+	
+	public void setUserId(Long userId) {
+	    this.userId = userId;
+	}
 
 	public String getPasswordHash() {
 		// TODO Auto-generated method stub

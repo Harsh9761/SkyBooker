@@ -27,7 +27,7 @@ public interface BookingService {
     
     PaymentResponseDTO startPayment(UUID bookingId, String method);
 
-    BookingResponseDTO completePayment(UUID paymentId,
+    BookingResponseDTO completePayment(UUID bookingId,UUID paymentId,
                                        String transactionId,
                                        String status);
 }

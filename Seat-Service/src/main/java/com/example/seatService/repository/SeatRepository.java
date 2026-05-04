@@ -5,6 +5,7 @@ import com.example.seatService.entity.SeatClass;
 import com.example.seatService.entity.SeatStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     void deleteByFlightId(Long flightId);
     
     Optional<Seat> findByFlightIdAndSeatNumber(Long flightId, String seatNumber);
+    
+    List<Seat> findByStatusAndHeldAtBefore(SeatStatus status, LocalDateTime time);
 }

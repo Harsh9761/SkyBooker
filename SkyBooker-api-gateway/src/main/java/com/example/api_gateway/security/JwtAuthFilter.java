@@ -20,20 +20,27 @@ public class JwtAuthFilter implements GlobalFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
-        String path = exchange.getRequest().getURI().getPath();
-
-        // Public APIs
-        if (path.startsWith("/auth/login") || path.startsWith("/auth/register")) {
+        //Allow preflight requests
+        if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
             return chain.filter(exchange);
         }
 
-        String token = exchange.getRequest()
+        String path = exchange.getRequest().getURI().getPath();
+
+        // Public APIs
+        if (path.startsWith("/auth/login") || path.startsWith("/auth/register") || (path.startsWith("/flights") && exchange.getRequest().getMethod() == HttpMethod.GET)) {
+            return chain.filter(exchange);
+        }
+
+        String authHeader = exchange.getRequest()
                 .getHeaders()
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return unauthorized(exchange);
         }
+
+        String token = authHeader.substring(7);
 
         if (!jwtUtil.validate(token)) {
             return unauthorized(exchange);
@@ -41,21 +48,17 @@ public class JwtAuthFilter implements GlobalFilter {
 
         String role = jwtUtil.getRole(token);
 
-        //  RBAC
-
-        // ADMIN only
+        // RBAC
         if (path.startsWith("/airports") || path.startsWith("/airlines")) {
             if (!"ADMIN".equals(role)) return forbidden(exchange);
         }
 
-        // USER + ADMIN
         if (path.startsWith("/bookings") || path.startsWith("/payments")) {
             if (!("PASSENGER".equals(role) || "ADMIN".equals(role))) {
                 return forbidden(exchange);
             }
         }
 
-        // Inject headers
         ServerWebExchange modified = exchange.mutate()
                 .request(r -> r
                         .header("X-User", jwtUtil.getUsername(token))

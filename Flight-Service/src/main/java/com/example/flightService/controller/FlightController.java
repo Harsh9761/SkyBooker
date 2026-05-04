@@ -84,22 +84,21 @@ public class FlightController {
     }
 
     // Decrement Seats
-    @PatchMapping("/{id}/decrement")
+    @PutMapping("/{id}/decrement")
     public String decrementSeats(
-            @PathVariable Long id,
-            @RequestParam int count
+            @PathVariable Long id
+            
     ) {
-        flightService.decrementSeats(id, count);
+        flightService.decrementSeats(id, 1);
         return "Seats decremented successfully";
     }
 
     // Increment Seats
-    @PatchMapping("/{id}/increment")
+    @PutMapping("/{id}/increment")
     public String incrementSeats(
-            @PathVariable Long id,
-            @RequestParam int count
+            @PathVariable Long id
     ) {
-        flightService.incrementSeats(id, count);
+        flightService.incrementSeats(id, 1);
         return "Seats incremented successfully";
     }
 
@@ -114,5 +113,10 @@ public class FlightController {
     @GetMapping("/airline/{airlineId}")
     public List<FlightDTO> getFlightsByAirline(@PathVariable Long airlineId) {
         return flightService.getFlightsByAirline(airlineId);
+    }
+    
+    @GetMapping("/all")
+    public List<FlightDTO> getAllFlights() {
+        return flightService.getAllFlights();
     }
 }

@@ -22,4 +22,10 @@ public interface SeatClient {
     @PostMapping("/seats/lock")
     void lockSeat(@RequestParam Long flightId,
                   @RequestParam String seatNumber);
+    
+    @PostMapping("/seats/cancel")
+    void cancelSeat(
+            @RequestParam Long flightId,
+            @RequestParam String seatNumber
+    );
 }

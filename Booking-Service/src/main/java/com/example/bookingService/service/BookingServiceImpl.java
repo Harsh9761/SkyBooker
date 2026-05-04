@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.example.bookingService.client.FlightClient;
 import com.example.bookingService.client.PaymentClient;
@@ -32,36 +33,42 @@ public class BookingServiceImpl implements BookingService {
     
     @Autowired
     private FlightClient flightClient;
+    
+
 
     //CREATE BOOKING
-    @Override
     public BookingResponseDTO createBooking(BookingRequestDTO request) {
 
-        // Fare calculate
         FareSummaryDTO fare = calculateFare(request.getFlightId(), request.getLuggageKg());
 
+        // STEP 1: HOLD SEAT (NON-BREAKING)
         try {
-            System.out.println("CALLING SEAT SERVICE");
+            System.out.println("CALLING SEAT SERVICE - HOLD");
 
-            // HOLD seat
             seatClient.holdSeat(
                     request.getFlightId(),
                     request.getSeatNumber(),
                     String.valueOf(request.getUserId())
             );
 
-            // Flight seat count decrease
-            flightClient.decrementSeat(request.getFlightId());
-
             System.out.println("SEAT HOLD SUCCESS");
 
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Seat hold failed");
+
+            //  IMPORTANT FIX:
+            // Do NOT break flow if seat already held
+            System.out.println("SEAT HOLD ISSUE IGNORED: " + e.getMessage());
         }
 
+        // STEP 2: DECREMENT FLIGHT SEAT
         try {
-            // Create booking
+            flightClient.decrementSeat(request.getFlightId());
+        } catch (Exception e) {
+            System.out.println("FLIGHT UPDATE FAILED: " + e.getMessage());
+        }
+
+        // STEP 3: CREATE BOOKING
+        try {
             Booking booking = new Booking();
 
             booking.setUserId(request.getUserId());
@@ -89,7 +96,7 @@ public class BookingServiceImpl implements BookingService {
 
         } catch (Exception e) {
 
-            // ROLLBACK (VERY IMPORTANT)
+            // ROLLBACK SAFE
             try {
                 seatClient.releaseSeat(
                         request.getFlightId(),
@@ -99,10 +106,10 @@ public class BookingServiceImpl implements BookingService {
                 flightClient.incrementSeat(request.getFlightId());
 
             } catch (Exception ex) {
-                System.out.println("Rollback failed: " + ex.getMessage());
+                System.out.println("ROLLBACK FAILED: " + ex.getMessage());
             }
 
-            throw new RuntimeException("Booking failed, rollback done");
+            throw new RuntimeException("Booking failed");
         }
     }
     // GET BY ID 
@@ -149,10 +156,27 @@ public class BookingServiceImpl implements BookingService {
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-
+        
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new RuntimeException("Already cancelled");
+        }
         booking.setStatus(BookingStatus.CANCELLED);
         
-        seatClient.releaseSeat(booking.getFlightId(), booking.getSeatNumber());
+        System.out.println(booking.getPaymentId());
+        if (booking.getPaymentId() != null) {
+        	try {
+        	    System.out.println("Calling refund...");
+        	    paymentClient.refundPayment(booking.getPaymentId());
+        	} catch (Exception e) {
+        	    e.printStackTrace();  //THIS WILL SHOW REAL ERROR
+        	}
+        }
+        
+        seatClient.cancelSeat(
+                booking.getFlightId(),
+                booking.getSeatNumber()
+        );
+        
         Booking updated = bookingRepository.save(booking);
 
         return mapToResponse(updated);
@@ -221,6 +245,10 @@ public class BookingServiceImpl implements BookingService {
         dto.setStatus(booking.getStatus().name());
         dto.setTotalFare(booking.getTotalFare());
         dto.setSeatNumber(booking.getSeatNumber());
+        
+        dto.setContactEmail(booking.getContactEmail());
+        dto.setContactPhone(booking.getContactPhone());
+        dto.setPaymentId(booking.getPaymentId());
         return dto;
     }
     
@@ -250,23 +278,63 @@ public class BookingServiceImpl implements BookingService {
         return paymentClient.initiate(req);
     }
     
+//    @Override
+//    public BookingResponseDTO completePayment(UUID paymentId,
+//                                              String transactionId,
+//                                              String status) {
+//
+//        PaymentResponseDTO res =
+//                paymentClient.process(paymentId, transactionId, status);
+//
+//        Booking booking = bookingRepository.findById(res.getBookingId())
+//                .orElseThrow(() -> new RuntimeException("Booking not found"));
+//        
+//        booking.setPaymentId(paymentId);
+//        if ("PAID".equalsIgnoreCase(res.getStatus())) {
+//
+//            booking.setStatus(BookingStatus.CONFIRMED);
+//
+//            // FINAL LOCK ONLY ON SUCCESS
+//            seatClient.lockSeat(
+//                    booking.getFlightId(),
+//                    booking.getSeatNumber()
+//            );
+//            
+//
+//        } else {
+//
+//            booking.setStatus(BookingStatus.CANCELLED);
+//
+//            seatClient.releaseSeat(
+//                    booking.getFlightId(),
+//                    booking.getSeatNumber()
+//            );
+//
+//            flightClient.incrementSeat(booking.getFlightId());
+//        }
+//
+//        bookingRepository.save(booking);
+//
+//        return mapToResponse(booking);
+//    }
+    
+    
     @Override
-    public BookingResponseDTO completePayment(UUID paymentId,
+    public BookingResponseDTO completePayment(UUID bookingId,
+                                              UUID paymentId,
                                               String transactionId,
                                               String status) {
 
-        PaymentResponseDTO res =
-                paymentClient.process(paymentId, transactionId, status);
-
-        Booking booking = bookingRepository.findById(res.getBookingId())
+        Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        //SUCCESS CASE
-        if ("PAID".equalsIgnoreCase(res.getStatus())) {
+        // now set paymentId here
+        booking.setPaymentId(paymentId);
+
+        if ("PAID".equalsIgnoreCase(status)) {
 
             booking.setStatus(BookingStatus.CONFIRMED);
 
-            
             seatClient.lockSeat(
                     booking.getFlightId(),
                     booking.getSeatNumber()
@@ -274,7 +342,6 @@ public class BookingServiceImpl implements BookingService {
 
         } else {
 
-            
             booking.setStatus(BookingStatus.CANCELLED);
 
             seatClient.releaseSeat(

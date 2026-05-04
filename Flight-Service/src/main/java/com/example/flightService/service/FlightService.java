@@ -12,7 +12,7 @@ public interface FlightService {
 
     FlightDTO addFlight(FlightDTO flightDTO);
 
-    // ✅ Read
+    //  Read
     FlightDTO getFlightById(Long id);
 
     FlightDTO getFlightByNumber(String flightNumber);
@@ -37,4 +37,6 @@ public interface FlightService {
     void incrementSeats(Long flightId, int seats);
 
     void deleteFlight(Long id);
+    
+    public List<FlightDTO> getAllFlights(); 
 }

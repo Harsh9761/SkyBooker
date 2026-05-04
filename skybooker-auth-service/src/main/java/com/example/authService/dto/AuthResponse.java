@@ -10,4 +10,8 @@ public class AuthResponse {
         this.role = role;
         this.userId = userId;
     }
+    
+    public String getRole() {
+        return role;
+    }
 }
