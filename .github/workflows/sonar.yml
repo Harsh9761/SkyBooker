@@ -12,7 +12,8 @@ runs-on: ubuntu-latest
 
 
 steps:
-  - uses: actions/checkout@v3
+  - name: Checkout code
+    uses: actions/checkout@v3
     with:
       fetch-depth: 0
 
@@ -22,10 +23,5 @@ steps:
       java-version: '17'
       distribution: 'temurin'
 
-  - name: Build & Analyze
-    run: mvn clean verify sonar:sonar \
-      -Dsonar.projectKey=harsh9761_SkyBooker \
-      -Dsonar.organization=harsh9761 \
-      -Dsonar.host.url=https://sonarcloud.io \
-      -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
+  - name: Build and analyze
+    run: mvn clean verify sonar:sonar -Dsonar.projectKey=harsh9761_SkyBooker -Dsonar.organization=harsh9761 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
