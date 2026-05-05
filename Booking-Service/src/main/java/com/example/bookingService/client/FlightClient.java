@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.bookingService.dto.FlightResponseDTO;
 
-@FeignClient(name = "flight-service", url = "http://localhost:8082")
+@FeignClient(name = "FLIGHT-SERVICE")
 public interface FlightClient {
 
     @GetMapping("/flights/{id}")

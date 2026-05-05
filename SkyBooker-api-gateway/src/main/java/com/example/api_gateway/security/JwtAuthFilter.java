@@ -28,7 +28,15 @@ public class JwtAuthFilter implements GlobalFilter {
         String path = exchange.getRequest().getURI().getPath();
 
         // Public APIs
-        if (path.startsWith("/auth/login") || path.startsWith("/auth/register") || (path.startsWith("/flights") && exchange.getRequest().getMethod() == HttpMethod.GET)) {
+        
+        if (path.startsWith("/oauth2") || path.startsWith("/login")) {
+            return chain.filter(exchange);
+        }
+        
+        if (path.startsWith("/auth/login") ||
+        		path.startsWith("/auth/send-otp") || 
+        	    path.startsWith("/auth/verify-otp")
+        		|| path.startsWith("/auth/register") || (path.startsWith("/flights") && exchange.getRequest().getMethod() == HttpMethod.GET)) {
             return chain.filter(exchange);
         }
 

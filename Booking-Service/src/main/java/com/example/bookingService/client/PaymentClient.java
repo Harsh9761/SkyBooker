@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.bookingService.dto.PaymentRequestDTO;
 import com.example.bookingService.dto.PaymentResponseDTO;
 
-@FeignClient(name = "payment-service", url = "http://localhost:8086")
+@FeignClient(name = "PAYMENT-SERVICE")
 public interface PaymentClient {
 
     @PostMapping("/payments/initiate")

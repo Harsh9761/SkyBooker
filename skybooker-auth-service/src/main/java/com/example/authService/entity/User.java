@@ -33,6 +33,12 @@ public class User {
     private String nationality;
 
     private LocalDateTime createdAt = LocalDateTime.now();
+    
+    
+    private String otp;
+    private LocalDateTime otpExpiry;
+    private int otpAttempts;
+    private LocalDateTime otpLastSentAt;
 
 	public String getFullName() {
 		return fullName;
@@ -123,6 +129,38 @@ public class User {
 	public void setPasswordHash(String passwordHash) {
 		// TODO Auto-generated method stub
 		this.passwordHash = passwordHash;
+	}
+
+	public String getOtp() {
+		return otp;
+	}
+
+	public void setOtp(String otp) {
+		this.otp = otp;
+	}
+
+	public LocalDateTime getOtpExpiry() {
+		return otpExpiry;
+	}
+
+	public void setOtpExpiry(LocalDateTime otpExpiry) {
+		this.otpExpiry = otpExpiry;
+	}
+
+	public int getOtpAttempts() {
+		return otpAttempts;
+	}
+
+	public void setOtpAttempts(int otpAttempts) {
+		this.otpAttempts = otpAttempts;
+	}
+
+	public LocalDateTime getOtpLastSentAt() {
+		return otpLastSentAt;
+	}
+
+	public void setOtpLastSentAt(LocalDateTime otpLastSentAt) {
+		this.otpLastSentAt = otpLastSentAt;
 	}
 
 	

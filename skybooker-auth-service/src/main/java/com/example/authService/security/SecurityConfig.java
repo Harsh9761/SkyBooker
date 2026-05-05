@@ -22,8 +22,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/register", "/auth/login").permitAll()
-                    .requestMatchers("/oauth2/**").permitAll()
+                    .requestMatchers("/auth/register", "/auth/login","/auth/send-otp",
+                    	    "/auth/verify-otp").permitAll()
+                    .requestMatchers("/oauth2/**","/login/**").permitAll()
                     .requestMatchers("/auth/users").hasAuthority("ADMIN")
                     .anyRequest().authenticated()
             )
@@ -33,16 +34,16 @@ public class SecurityConfig {
             )
 
             // VERY IMPORTANT
-            .formLogin(form -> form.disable())
+            .formLogin(form -> form.disable());
 
             // Return JSON instead of HTML
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((req, res, e) -> {
-                    res.setContentType("application/json");
-                    res.setStatus(401);
-                    res.getWriter().write("{\"error\": \"Unauthorized\"}");
-                })
-            );
+//            .exceptionHandling(ex -> ex
+//                .authenticationEntryPoint((req, res, e) -> {
+//                    res.setContentType("application/json");
+//                    res.setStatus(401);
+//                    res.getWriter().write("{\"error\": \"Unauthorized\"}");
+//                })
+//            );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

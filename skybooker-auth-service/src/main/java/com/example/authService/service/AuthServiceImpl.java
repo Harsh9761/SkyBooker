@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,8 +22,10 @@ public class AuthServiceImpl implements AuthService {
     private UserRepository userRepository;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
     private JwtUtil jwtUtil = new JwtUtil();
+    
+    @Autowired
+    private EmailService emailService;
 
     // REGISTER
     @Override
@@ -203,5 +207,60 @@ public class AuthServiceImpl implements AuthService {
         dto.setNationality(user.getNationality());
 
         return dto;
+    }
+    
+    
+    @Override
+    public void sendOtp(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getOtpLastSentAt() != null &&
+            user.getOtpLastSentAt().plusSeconds(30).isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("Wait before requesting OTP");
+        }
+
+        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
+
+        user.setOtp(encoder.encode(otp));
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
+        user.setOtpAttempts(0);
+        user.setOtpLastSentAt(LocalDateTime.now());
+
+        userRepository.save(user);
+
+        emailService.send(email, "OTP for Reset Password", "OTP: " + otp);
+    }
+    
+    
+    @Override
+    public void verifyOtpAndReset(String email, String otp, String newPassword) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getOtpExpiry() == null ||
+            user.getOtpExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP expired");
+        }
+
+        if (user.getOtpAttempts() >= 5) {
+            throw new RuntimeException("Too many attempts");
+        }
+
+        if (!encoder.matches(otp, user.getOtp())) {
+            user.setOtpAttempts(user.getOtpAttempts() + 1);
+            userRepository.save(user);
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        user.setPasswordHash(encoder.encode(newPassword));
+
+        user.setOtp(null);
+        user.setOtpExpiry(null);
+        user.setOtpAttempts(0);
+
+        userRepository.save(user);
     }
 }

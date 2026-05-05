@@ -20,7 +20,7 @@ public class SeatScheduler {
     @Scheduled(fixedRate = 30000) // every 30 sec
     public void releaseExpiredSeats() {
 
-        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
+        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(5);
 
         List<Seat> seats = seatRepository
                 .findByStatusAndHeldAtBefore(SeatStatus.HELD, expiryTime);

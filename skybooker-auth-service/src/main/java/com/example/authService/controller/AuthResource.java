@@ -6,9 +6,11 @@ import com.example.authService.service.AuthService;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -98,5 +100,32 @@ public class AuthResource {
     @GetMapping("/users")
     public List<UserDTO> getAllUsers() {
         return authService.getAllUsers();
+    }
+    
+    
+ // SEND OTP
+    @PostMapping("/send-otp")
+    public ResponseEntity<Map<String, String>> sendOtp(@RequestBody ForgotPasswordDTO request) {
+
+        authService.sendOtp(request.getEmail());
+
+        return ResponseEntity.ok(Map.of(
+            "message", "OTP sent to email"
+        ));
+    }
+
+    // VERIFY OTP + RESET PASSWORD
+    @PostMapping("/verify-otp")
+    public ResponseEntity<Map<String, String>> verifyOtp(@RequestBody ResetPasswordDTO request) {
+
+        authService.verifyOtpAndReset(
+                request.getEmail(),
+                request.getOtp(),
+                request.getNewPassword()
+        );
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Password reset successful"
+        ));
     }
 }

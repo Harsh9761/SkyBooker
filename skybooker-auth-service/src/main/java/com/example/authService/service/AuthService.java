@@ -24,4 +24,8 @@ public interface AuthService {
     List<UserDTO> getAllUsers();
 
     Long validateAndExtractUserId(String token);
+
+	void verifyOtpAndReset(String email, String otp, String newPassword);
+
+	void sendOtp(String email);
 }

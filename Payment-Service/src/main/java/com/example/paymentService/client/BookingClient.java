@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.paymentService.dto.BookingResponseDTO;
 
-@FeignClient(name = "booking-service", url = "http://localhost:8084")
+@FeignClient(name = "BOOKING-SERVICE")
 public interface BookingClient {
 
     @PostMapping("/bookings/payment/callback")

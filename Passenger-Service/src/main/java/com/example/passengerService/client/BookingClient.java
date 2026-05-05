@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.passengerService.dto.BookingDTO;
 
-@FeignClient(name = "booking-service", url = "http://localhost:8084")
+@FeignClient(name = "BOOKING-SERVICE")
 public interface BookingClient {
 
     // Get booking by ID
