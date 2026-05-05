@@ -24,8 +24,8 @@ steps:
 
   - name: Build & Analyze
     run: mvn clean verify sonar:sonar \
-      -Dsonar.projectKey=harsh9761 \
-      -Dsonar.organization=Harsh9761_SkyBooker \
+      -Dsonar.projectKey=harsh9761_SkyBooker \
+      -Dsonar.organization=harsh9761 \
       -Dsonar.host.url=https://sonarcloud.io \
       -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-```
+
