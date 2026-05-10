@@ -1,10 +1,12 @@
 package com.example.bookingService.dto;
 
+import java.util.List;
+
 public class BookingRequestDTO {
 
     private Long userId;
     private Long flightId;
-    private String seatNumber;
+    private List<String> seatNumbers;
     private String tripType;
     private String mealPreference;
     private Integer luggageKg;
@@ -70,12 +72,13 @@ public class BookingRequestDTO {
         this.contactPhone = contactPhone;
     }
 
-	public String getSeatNumber() {
-		// TODO Auto-generated method stub
-		return seatNumber;
+	
+
+	public List<String> getSeatNumbers() {
+		return seatNumbers;
 	}
-	public void setSeatNumber(String seatNumber) {
-		// TODO Auto-generated method stub
-		this.seatNumber =  seatNumber;
+
+	public void setSeatNumbers(List<String> seatNumbers) {
+		this.seatNumbers = seatNumbers;
 	}
 }

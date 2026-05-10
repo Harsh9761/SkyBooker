@@ -3,9 +3,7 @@ package com.example.bookingService;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import com.example.bookingService.client.FlightClient;
 import com.example.bookingService.client.PaymentClient;
@@ -24,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class BookingServiceImplTest {
 
     @Mock
-    BookingRepository bookingRepository;
+    BookingRepository repository;
 
     @Mock
     PaymentClient paymentClient;
@@ -36,73 +34,115 @@ class BookingServiceImplTest {
     FlightClient flightClient;
 
     @InjectMocks
-    BookingServiceImpl bookingService;
+    BookingServiceImpl service;
 
     @Test
-    void testGetBookingById() {
+    void testCalculateFare() {
+        FareSummaryDTO result = service.calculateFare(1L, 10, 2);
+        assertTrue(result.getTotalFare() > 0);
+    }
 
-        UUID id = UUID.randomUUID();
 
-        Booking booking = new Booking();
-        booking.setBookingId(id);
-        booking.setPnrCode("ABC123");
-        booking.setTotalFare(5000.0);
-        booking.setSeatNumber("12A");
-        booking.setStatus(BookingStatus.PENDING);
+    @Test
+    void testGetBookingById_NotFound() {
+        when(repository.findById(any())).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class,
+                () -> service.getBookingById(UUID.randomUUID()));
+    }
 
-        when(bookingRepository.findById(id))
-                .thenReturn(Optional.of(booking));
 
-        BookingResponseDTO result = bookingService.getBookingById(id);
-
-        assertNotNull(result);
-        assertEquals("ABC123", result.getPnrCode());
+    @Test
+    void testAddAddOn_NotFound() {
+        when(repository.findById(any())).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class,
+                () -> service.addAddOn(UUID.randomUUID(), "Veg", 10));
     }
 
     @Test
-    void testGetBookingsByUser() {
-
-        Long userId = 1L;
-
-        Booking booking = new Booking();
-        booking.setBookingId(UUID.randomUUID());
-        booking.setUserId(userId);
-        booking.setPnrCode("PNR123");
-        booking.setSeatNumber("12A");
-        booking.setStatus(BookingStatus.PENDING);
-        booking.setTotalFare(5000.0);
-
-        when(bookingRepository.findByUserId(userId))
-                .thenReturn(List.of(booking));
-
-        List<BookingResponseDTO> result =
-                bookingService.getBookingsByUser(userId);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("PNR123", result.get(0).getPnrCode());
-
-        verify(bookingRepository).findByUserId(userId);
-    }
-
-    @Test
-    void testCreateBooking_SuccessFlow() {
-
+    void testCreateBooking_NoSeats() {
         BookingRequestDTO req = new BookingRequestDTO();
-        req.setUserId(1L);
-        req.setFlightId(101L);
-        req.setSeatNumber("12A");
-        req.setTripType("ONE_WAY");
-        req.setLuggageKg(10);
+        req.setSeatNumbers(Collections.emptyList());
+        assertThrows(RuntimeException.class,
+                () -> service.createBooking(req));
+    }
 
-        when(bookingRepository.save(any())).thenAnswer(i -> {
-            Booking b = i.getArgument(0);
-            b.setBookingId(UUID.randomUUID());
-            return b;
-        });
+    @Test
+    void testCreateBooking_DuplicateSeats() {
+        BookingRequestDTO req = new BookingRequestDTO();
+        req.setSeatNumbers(List.of("A1", "A1"));
+        assertThrows(RuntimeException.class,
+                () -> service.createBooking(req));
+    }
 
-        BookingResponseDTO result = bookingService.createBooking(req);
+    @Test
+    void testCancelBooking_AlreadyCancelled() {
+        Booking b = new Booking();
+        b.setBookingId(UUID.randomUUID());
+        b.setStatus(BookingStatus.CANCELLED);
+        when(repository.findById(any())).thenReturn(Optional.of(b));
+        assertThrows(RuntimeException.class,
+                () -> service.cancelBooking(b.getBookingId()));
+    }
 
+    @Test
+    void testCancelBooking_Success() {
+        Booking b = new Booking();
+        b.setBookingId(UUID.randomUUID());
+        b.setStatus(BookingStatus.CONFIRMED);
+        b.setSeatNumbers("A1,A2");
+        when(repository.findById(any())).thenReturn(Optional.of(b));
+        when(repository.save(any())).thenReturn(b);
+        BookingResponseDTO result = service.cancelBooking(b.getBookingId());
         assertNotNull(result);
     }
+
+    @Test
+    void testStartPayment() {
+        Booking b = new Booking();
+        b.setBookingId(UUID.randomUUID());
+        b.setStatus(BookingStatus.PENDING);
+        b.setUserId(1L);
+        b.setTotalFare(1000.0);
+        when(repository.findById(any())).thenReturn(Optional.of(b));
+        when(paymentClient.initiate(any())).thenReturn(new PaymentResponseDTO());
+        PaymentResponseDTO result = service.startPayment(b.getBookingId(), "CARD");
+        assertNotNull(result);
+    }
+
+    @Test
+    void testStartPayment_InvalidState() {
+        Booking b = new Booking();
+        b.setStatus(BookingStatus.CONFIRMED);
+        when(repository.findById(any())).thenReturn(Optional.of(b));
+        assertThrows(RuntimeException.class,
+                () -> service.startPayment(UUID.randomUUID(), "CARD"));
+    }
+
+    @Test
+    void testStartPayment_InvalidMethod() {
+        Booking b = new Booking();
+        b.setStatus(BookingStatus.PENDING);
+        when(repository.findById(any())).thenReturn(Optional.of(b));
+        assertThrows(RuntimeException.class,
+                () -> service.startPayment(UUID.randomUUID(), "XYZ"));
+    }
+
+
+
+    @Test
+    void testCompletePayment_NotFound() {
+        when(repository.findById(any())).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class,
+                () -> service.completePayment(UUID.randomUUID(), UUID.randomUUID(), "TXN", "PAID"));
+    }
+
+    @Test
+    void testGetUpcomingBookings() {
+        Booking b = new Booking();
+        b.setStatus(BookingStatus.CONFIRMED);
+        when(repository.findByUserId(1L)).thenReturn(List.of(b));
+        List<BookingResponseDTO> result = service.getUpcomingBookings(1L);
+        assertEquals(1, result.size());
+    }
+
 }

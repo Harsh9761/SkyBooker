@@ -19,7 +19,7 @@ public interface BookingService {
 
     BookingResponseDTO cancelBooking(UUID bookingId);
 
-    FareSummaryDTO calculateFare(Long flightId, Integer luggageKg);
+    FareSummaryDTO calculateFare(Long flightId, Integer luggageKg, int seats);
 
     BookingResponseDTO addAddOn(UUID bookingId, String meal, Integer luggageKg);
 

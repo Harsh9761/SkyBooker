@@ -94,19 +94,19 @@ public class FlightController {
     }
 
     // Increment Seats
-    @PutMapping("/{id}/increment")
-    public String incrementSeats(
-            @PathVariable Long id
-    ) {
-        flightService.incrementSeats(id, 1);
+    @PutMapping("/{id}/increment/{count}")
+    public String incrementSeats(@PathVariable Long id,
+                                 @PathVariable int count) {
+        flightService.incrementSeats(id, count);
         return "Seats incremented successfully";
     }
 
     // Delete Flight
-    @DeleteMapping("/{id}")
-    public String deleteFlight(@PathVariable Long id) {
-        flightService.deleteFlight(id);
-        return "Flight deleted successfully";
+    @PutMapping("/{id}/decrement/{count}")
+    public String decrementSeats(@PathVariable Long id,
+                                 @PathVariable int count) {
+        flightService.decrementSeats(id, count);
+        return "Seats decremented successfully";
     }
 
     // Get Flights by Airline

@@ -1,5 +1,6 @@
 package com.example.bookingService.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 public class BookingResponseDTO {
@@ -8,7 +9,7 @@ public class BookingResponseDTO {
     private String pnrCode;
     private String status;
     private Double totalFare;
-    private String seatNumber;
+    private List<String> seatNumbers;
     private String contactEmail;
     private String contactPhone;
     private UUID paymentId;
@@ -58,14 +59,6 @@ public class BookingResponseDTO {
         this.totalFare = totalFare;
     }
 
-	public String getSeatNumber() {
-		return seatNumber;
-	}
-
-	public void setSeatNumber(String seatNumber) {
-		this.seatNumber = seatNumber;
-	}
-
 	public String getContactEmail() {
 		return contactEmail;
 	}
@@ -88,6 +81,14 @@ public class BookingResponseDTO {
 
 	public void setPaymentId(UUID paymentId) {
 		this.paymentId = paymentId;
+	}
+
+	public List<String> getSeatNumbers() {
+		return seatNumbers;
+	}
+
+	public void setSeatNumbers(List<String> seatNumbers) {
+		this.seatNumbers = seatNumbers;
 	}
 
 	

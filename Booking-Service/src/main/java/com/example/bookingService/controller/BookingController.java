@@ -57,8 +57,8 @@ public class BookingController {
     // CALCULATE FARE
     @GetMapping("/fare")
     public FareSummaryDTO calculateFare(@RequestParam Long flightId,
-                                        @RequestParam(required = false) Integer luggageKg) {
-        return bookingService.calculateFare(flightId, luggageKg);
+                                        @RequestParam(required = false) Integer luggageKg,@RequestParam int seats) {
+        return bookingService.calculateFare(flightId, luggageKg,seats);
     }
 
     //  ADD ONS 

@@ -24,6 +24,7 @@ class AuthServiceImplTest {
     @InjectMocks
     AuthServiceImpl authService;
 
+    // ---------------- REGISTER SUCCESS ----------------
     @Test
     void testRegister() {
 
@@ -49,6 +50,22 @@ class AuthServiceImplTest {
         assertEquals("PASSENGER", response.getRole());
     }
 
+    // ---------------- REGISTER EMAIL EXISTS ----------------
+    @Test
+    void testRegister_EmailAlreadyExists() {
+
+        RegisterDTO dto = new RegisterDTO();
+        dto.setEmail("john@test.com");
+
+        when(userRepository.existsByEmail(dto.getEmail())).thenReturn(true);
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> authService.register(dto));
+
+        assertEquals("Email already exists", ex.getMessage());
+    }
+
+    // ---------------- LOGIN SUCCESS ----------------
     @Test
     void testLogin() {
 
@@ -75,6 +92,48 @@ class AuthServiceImplTest {
         assertEquals("PASSENGER", response.getRole());
     }
 
+    // ---------------- LOGIN WRONG PASSWORD ----------------
+    @Test
+    void testLogin_InvalidPassword() {
+
+        LoginDTO dto = new LoginDTO();
+        dto.setEmail("john@test.com");
+        dto.setPassword("wrong");
+
+        User user = new User();
+        user.setEmail("john@test.com");
+        user.setPasswordHash(
+                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder()
+                        .encode("correct")
+        );
+        user.setActive(true);
+
+        when(userRepository.findByEmail(dto.getEmail()))
+                .thenReturn(Optional.of(user));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> authService.login(dto));
+
+        assertEquals("Invalid credentials", ex.getMessage());
+    }
+
+    // ---------------- LOGIN USER NOT FOUND ----------------
+    @Test
+    void testLogin_UserNotFound() {
+
+        LoginDTO dto = new LoginDTO();
+        dto.setEmail("notfound@test.com");
+
+        when(userRepository.findByEmail(dto.getEmail()))
+                .thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> authService.login(dto));
+
+        assertEquals("User not found", ex.getMessage());
+    }
+
+    // ---------------- GET USER SUCCESS ----------------
     @Test
     void testGetUserById() {
 
@@ -91,5 +150,52 @@ class AuthServiceImplTest {
 
         assertNotNull(result);
         assertEquals("John", result.getFullName());
+    }
+
+    // ---------------- GET USER NOT FOUND ----------------
+    @Test
+    void testGetUserById_NotFound() {
+
+        when(userRepository.findById(99L))
+                .thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> authService.getUserById(99L));
+
+        assertEquals("User not found", ex.getMessage());
+    }
+
+
+    // ---------------- DEACTIVATE ACCOUNT ----------------
+    @Test
+    void testDeactivateAccount() {
+
+        User user = new User();
+        user.setUserId(1L);
+        user.setActive(true);
+
+        when(userRepository.findById(1L))
+                .thenReturn(Optional.of(user));
+
+        authService.deactivateAccount(1L);
+
+        assertFalse(user.isActive());
+    }
+
+    // ---------------- DEACTIVATE ALREADY INACTIVE ----------------
+    @Test
+    void testDeactivateAccount_AlreadyInactive() {
+
+        User user = new User();
+        user.setUserId(1L);
+        user.setActive(false);
+
+        when(userRepository.findById(1L))
+                .thenReturn(Optional.of(user));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> authService.deactivateAccount(1L));
+
+        assertEquals("User is already deactivated", ex.getMessage());
     }
 }

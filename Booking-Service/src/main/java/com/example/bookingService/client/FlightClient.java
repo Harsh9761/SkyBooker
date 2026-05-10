@@ -16,9 +16,11 @@ public interface FlightClient {
     @GetMapping("/flights/{id}")
     FlightResponseDTO getFlightById(@PathVariable Long id);
 
-    @PutMapping("/flights/{id}/decrement")
-    void decrementSeat(@PathVariable Long id);
+    @PutMapping("/flights/{id}/decrement/{count}")
+    void decrementSeatBulk(@PathVariable Long id,
+                           @PathVariable int count);
 
-    @PutMapping("/flights/{id}/increment")
-    void incrementSeat(@PathVariable Long id);
+    @PutMapping("/flights/{id}/increment/{count}")
+    void incrementSeatBulk(@PathVariable Long id,
+                           @PathVariable int count);
 }

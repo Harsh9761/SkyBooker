@@ -1,6 +1,7 @@
 package com.example.authService.controller;
 
 import com.example.authService.dto.*;
+import com.example.authService.entity.Role;
 import com.example.authService.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -127,5 +128,22 @@ public class AuthResource {
         return ResponseEntity.ok(Map.of(
             "message", "Password reset successful"
         ));
+    }
+    
+    @PutMapping("/admin/role")
+    public String changeUserRole(
+            @RequestParam Long userId,
+            @RequestParam Role role) {
+
+        authService.changeUserRole(userId, role);
+        return "User role updated successfully";
+    }
+    
+    
+    @PutMapping("/admin/activate/{userId}")
+    public String adminActivateUser(@PathVariable Long userId) {
+
+        authService.activateAccount(userId);
+        return "User activated by admin";
     }
 }

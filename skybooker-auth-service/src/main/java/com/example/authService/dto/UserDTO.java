@@ -6,6 +6,7 @@ public class UserDTO {
     public String email;
     public String phone;
     public String role;
+    private boolean active;
 
     public String passportNumber;
     public String nationality;
@@ -49,5 +50,13 @@ public class UserDTO {
 	
 	public String getRole() {
 		return role;
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 }

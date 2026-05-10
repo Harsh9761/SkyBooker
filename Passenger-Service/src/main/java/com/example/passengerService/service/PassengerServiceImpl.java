@@ -11,6 +11,7 @@ import com.example.passengerService.entity.PassengerType;
 import com.example.passengerService.repository.PassengerRepository;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -32,30 +33,32 @@ public class PassengerServiceImpl implements PassengerService {
     @Override
     public PassengerDTO addPassenger(PassengerDTO dto) {
 
-        //Booking fetch 
         BookingDTO booking = bookingClient.getBooking(dto.getBookingId());
 
         if (booking == null) {
             throw new RuntimeException("Booking not found");
         }
 
-        // Booking status check
         if (!"PENDING".equalsIgnoreCase(booking.getStatus())) {
             throw new RuntimeException("Cannot add passenger, booking not in Pending state");
         }
 
-        //  Seat from booking 
-        String seat = booking.getSeatNumber();
+        // ✅ FIX HERE (LIST SUPPORT)
+        if (booking.getSeatNumbers() == null || booking.getSeatNumbers().isEmpty()) {
+            throw new RuntimeException("No seats in booking");
+        }
 
-        if (seat == null) {
+        boolean validSeat = booking.getSeatNumbers()
+                .stream()
+                .anyMatch(s -> s.trim().equals(dto.getSeatNumber()));
+
+        if (!validSeat) {
             throw new RuntimeException("Seat not assigned in booking");
         }
 
         PassengerInfo p = new PassengerInfo();
 
-        // link
         p.setBookingId(dto.getBookingId());
-
         p.setTitle(dto.getTitle());
         p.setFirstName(dto.getFirstName());
         p.setLastName(dto.getLastName());
@@ -65,20 +68,16 @@ public class PassengerServiceImpl implements PassengerService {
         p.setPassportExpiry(dto.getPassportExpiry().toString());
         p.setNationality(dto.getNationality());
 
-        // seat always booking se
-        p.setSeatNumber(seat);
+        p.setSeatNumber(dto.getSeatNumber());
 
-        //Ticket number generate
         p.setTicketNumber(generateTicketNumber());
-
-        //Passenger Type calculate
         p.setPassengerType(calculatePassengerType(dto.getDateOfBirth()));
 
         PassengerInfo saved = repository.save(p);
 
         return mapToDTO(saved);
     }
-
+    
     //GET BY ID
     @Override
     public PassengerDTO getPassengerById(Long passengerId) {

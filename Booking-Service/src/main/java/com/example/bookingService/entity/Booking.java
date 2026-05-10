@@ -1,6 +1,7 @@
 package com.example.bookingService.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -38,7 +39,9 @@ public class Booking {
     private LocalDateTime bookedAt;
 
     private UUID paymentId;
-    private String seatNumber;
+    
+    
+    private String seatNumbers; 
 
     //Constructors
 
@@ -188,11 +191,11 @@ public class Booking {
         this.paymentId = paymentId;
     }
 
-	public String getSeatNumber() {
-		return seatNumber;
-	}
+    public String getSeatNumbers() {
+        return seatNumbers;
+    }
 
-	public void setSeatNumber(String seatNumber) {
-		this.seatNumber = seatNumber;
-	}
+    public void setSeatNumbers(String seatNumbers) {
+        this.seatNumbers = seatNumbers;
+    }
 }

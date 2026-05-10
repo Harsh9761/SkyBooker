@@ -159,7 +159,10 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
+        
+        if (!user.isActive()) {
+            throw new RuntimeException("User is already deactivated");
+        }
         user.setActive(false);
 
         userRepository.save(user);
@@ -169,8 +172,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public List<UserDTO> getAllUsers() {
 
-        return userRepository.findAll()
+    	return userRepository.findAll()
                 .stream()
+                .filter(user -> user.getRole() != Role.ADMIN)
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -205,6 +209,7 @@ public class AuthServiceImpl implements AuthService {
         dto.setRole(user.getRole().name());
         dto.setPassportNumber(user.getPassportNumber());
         dto.setNationality(user.getNationality());
+        dto.setActive(user.isActive());
 
         return dto;
     }
@@ -261,6 +266,26 @@ public class AuthServiceImpl implements AuthService {
         user.setOtpExpiry(null);
         user.setOtpAttempts(0);
 
+        userRepository.save(user);
+    }
+    
+    @Override
+    public void changeUserRole(Long userId, Role role) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        user.setRole(role);
+
+        userRepository.save(user);
+    }
+    
+    public void activateAccount(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setActive(true);
         userRepository.save(user);
     }
 }

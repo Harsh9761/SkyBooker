@@ -1,5 +1,6 @@
 package com.example.passengerService.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 public class BookingDTO {
@@ -8,7 +9,9 @@ public class BookingDTO {
     private String pnrCode;
     private String status;
     private Double totalFare;
-    private String seatNumber;
+//    private String seatNumber;
+    
+    private List<String> seatNumbers;
 	public UUID getBookingId() {
 		return bookingId;
 	}
@@ -33,11 +36,17 @@ public class BookingDTO {
 	public void setTotalFare(Double totalFare) {
 		this.totalFare = totalFare;
 	}
-	public String getSeatNumber() {
-		return seatNumber;
+//	public String getSeatNumber() {
+//		return seatNumber;
+//	}
+//	public void setSeatNumber(String seatNumber) {
+//		this.seatNumber = seatNumber;
+//	}
+	public List<String> getSeatNumbers() {
+		return seatNumbers;
 	}
-	public void setSeatNumber(String seatNumber) {
-		this.seatNumber = seatNumber;
+	public void setSeatNumbers(List<String> seatNumbers) {
+		this.seatNumbers = seatNumbers;
 	}
 
     // getters setters

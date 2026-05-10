@@ -24,35 +24,37 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Analyze auth-service
+      
+      
+      - name: Analyze skybooker-auth-service
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          cd auth-service
           mvn -B clean verify sonar:sonar \
             -Dsonar.projectKey=harsh9761_auth \
             -Dsonar.organization=harsh9761 \
             -Dsonar.host.url=https://sonarcloud.io
+        working-directory: skybooker-auth-service
 
-      - name: Analyze booking-service
+      - name: Analyze Booking-Service
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          cd booking-service
           mvn -B clean verify sonar:sonar \
             -Dsonar.projectKey=harsh9761_booking \
             -Dsonar.organization=harsh9761 \
             -Dsonar.host.url=https://sonarcloud.io
+        working-directory: Booking-Service
 
-      - name: Analyze flight-service
+      - name: Analyze Flight-Service
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          cd flight-service
           mvn -B clean verify sonar:sonar \
             -Dsonar.projectKey=harsh9761_flight \
             -Dsonar.organization=harsh9761 \
             -Dsonar.host.url=https://sonarcloud.io
+        working-directory: Flight-Service

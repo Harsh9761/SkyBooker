@@ -1,6 +1,8 @@
 package com.example.authService.service;
 
 import com.example.authService.dto.*;
+import com.example.authService.entity.Role;
+
 import java.util.*;
 
 public interface AuthService {
@@ -28,4 +30,8 @@ public interface AuthService {
 	void verifyOtpAndReset(String email, String otp, String newPassword);
 
 	void sendOtp(String email);
+	
+	void changeUserRole(Long userId, Role role);
+
+	void activateAccount(Long userId);
 }
