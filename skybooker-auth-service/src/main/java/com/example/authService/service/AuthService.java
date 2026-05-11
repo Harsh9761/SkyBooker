@@ -34,4 +34,8 @@ public interface AuthService {
 	void changeUserRole(Long userId, Role role);
 
 	void activateAccount(Long userId);
+	
+	void sendRegisterOtp(String email);
+
+	void verifyRegisterOtp(String email, String otp);
 }

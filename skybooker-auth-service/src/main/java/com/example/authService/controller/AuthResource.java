@@ -146,4 +146,29 @@ public class AuthResource {
         authService.activateAccount(userId);
         return "User activated by admin";
     }
+    
+    @PostMapping("/send-register-otp")
+    public ResponseEntity<Map<String, String>> sendRegisterOtp(
+            @RequestBody OtpRequestDTO request) {
+
+        authService.sendRegisterOtp(request.getEmail());
+
+        return ResponseEntity.ok(Map.of(
+                "message", "OTP sent successfully"
+        ));
+    }
+    
+    @PostMapping("/verify-register-otp")
+    public ResponseEntity<Map<String, String>> verifyRegisterOtp(
+            @RequestBody OtpRequestDTO request) {
+
+        authService.verifyRegisterOtp(
+                request.getEmail(),
+                request.getOtp()
+        );
+
+        return ResponseEntity.ok(Map.of(
+                "message", "OTP verified successfully"
+        ));
+    }
 }

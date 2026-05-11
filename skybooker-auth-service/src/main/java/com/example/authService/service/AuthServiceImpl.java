@@ -1,17 +1,23 @@
 package com.example.authService.service;
 
 import com.example.authService.dto.*;
+import java.time.Duration;
+import java.util.Random;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
 import com.example.authService.entity.Role;
 import com.example.authService.entity.User;
 import com.example.authService.repository.UserRepository;
 import com.example.authService.security.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -26,6 +32,9 @@ public class AuthServiceImpl implements AuthService {
     
     @Autowired
     private EmailService emailService;
+    
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     // REGISTER
     @Override
@@ -33,6 +42,14 @@ public class AuthServiceImpl implements AuthService {
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
+        }
+        
+        String verified =
+                redisTemplate.opsForValue()
+                        .get("verified:" + request.getEmail());
+
+        if (verified == null) {
+            throw new RuntimeException("Please verify email first");
         }
 
         User user = new User();
@@ -46,6 +63,10 @@ public class AuthServiceImpl implements AuthService {
         user.setProvider("LOCAL");
 
         userRepository.save(user);
+        
+        redisTemplate.delete(
+                "verified:" + request.getEmail()
+        );
 
         String token = jwtUtil.generateToken(
         	    user.getEmail(),
@@ -287,5 +308,79 @@ public class AuthServiceImpl implements AuthService {
 
         user.setActive(true);
         userRepository.save(user);
+    }
+    
+    
+    
+    @Override
+    public void sendRegisterOtp(String email) {
+
+        Optional<User> existingUser =
+                userRepository.findByEmail(email);
+
+        if (existingUser.isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        String cooldownKey = "cooldown:" + email;
+
+        if (redisTemplate.hasKey(cooldownKey)) {
+            throw new RuntimeException(
+                    "Wait 30 sec before requesting OTP again"
+            );
+        }
+
+        String otp = String.valueOf(
+                new Random().nextInt(900000) + 100000
+        );
+
+        // SAVE OTP
+        redisTemplate.opsForValue().set(
+                "otp:" + email,
+                otp,
+                Duration.ofMinutes(5)
+        );
+
+        // COOLDOWN
+        redisTemplate.opsForValue().set(
+                cooldownKey,
+                "true",
+                Duration.ofSeconds(30)
+        );
+
+        emailService.send(
+                email,
+                "Registration OTP",
+                "Your OTP is: " + otp
+        );
+    }
+    
+    
+    @Override
+    public void verifyRegisterOtp(
+            String email,
+            String otp) {
+
+        String storedOtp =
+                redisTemplate.opsForValue()
+                        .get("otp:" + email);
+
+        if (storedOtp == null) {
+            throw new RuntimeException("OTP expired");
+        }
+
+        if (!storedOtp.equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        // REMOVE OTP
+        redisTemplate.delete("otp:" + email);
+
+        // SAVE VERIFIED STATUS
+        redisTemplate.opsForValue().set(
+                "verified:" + email,
+                "true",
+                Duration.ofMinutes(10)
+        );
     }
 }

@@ -33,10 +33,19 @@ public class JwtAuthFilter implements GlobalFilter {
             return chain.filter(exchange);
         }
         
-        if (path.startsWith("/auth/login") ||
-        		path.startsWith("/auth/send-otp") || 
-        	    path.startsWith("/auth/verify-otp")
-        		|| path.startsWith("/auth/register") || (path.startsWith("/flights") && exchange.getRequest().getMethod() == HttpMethod.GET)) {
+        if (
+                path.startsWith("/auth/login") ||
+                path.startsWith("/auth/register") ||
+                path.startsWith("/auth/send-otp") ||
+                path.startsWith("/auth/verify-otp") ||
+
+                
+                path.startsWith("/auth/send-register-otp") ||
+                path.startsWith("/auth/verify-register-otp") ||
+
+                (path.startsWith("/flights") &&
+                        exchange.getRequest().getMethod() == HttpMethod.GET)
+        ) {
             return chain.filter(exchange);
         }
 

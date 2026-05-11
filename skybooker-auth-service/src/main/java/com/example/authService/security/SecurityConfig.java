@@ -23,7 +23,9 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/auth/register", "/auth/login","/auth/send-otp",
-                    	    "/auth/verify-otp").permitAll()
+                    	    "/auth/verify-otp",
+                            "/auth/send-register-otp",
+                            "/auth/verify-register-otp").permitAll()
                     .requestMatchers("/oauth2/**","/login/**").permitAll()
                     .requestMatchers("/auth/users").hasAuthority("ADMIN")
                     .anyRequest().authenticated()
