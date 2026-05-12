@@ -1,8 +1,11 @@
 package com.example.notificationService.service;
 
+import com.example.notificationService.config.RabbitMQConfig;
+import com.example.notificationService.dto.BookingNotificationEvent;
 import com.example.notificationService.entity.*;
 import com.example.notificationService.repository.NotificationRepository;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -42,10 +45,33 @@ public class NotifServiceImpl implements NotifService {
         repo.save(appNotif);
 
         //  EMAIL Notification
-        String emailBody = "Booking Confirmed\n\n" +
-                "Your booking is successfully confirmed.\n" +
-                "PNR: " + bookingId + "\n\n" +
-                "Thank you for choosing us.";
+        String emailBody =
+                "Dear Customer,\n\n" +
+
+                "We are pleased to inform you that your flight booking " +
+                "has been successfully confirmed.\n\n" +
+
+                "----------------------------------------\n" +
+                "BOOKING DETAILS\n" +
+                "----------------------------------------\n" +
+
+                "BookingId : " + bookingId + "\n" +
+                "Booking Status : CONFIRMED\n" +
+                "Payment Status : SUCCESS\n\n" +
+
+                "Please keep your PNR number safe for check-in and " +
+                "future reference.\n\n" +
+
+                "Important Instructions:\n" +
+                "- Arrive at the airport at least 2 hours before departure.\n" +
+                "- Carry a valid government-issued ID proof.\n" +
+                "- Web check-in is recommended.\n\n" +
+
+                "Thank you for choosing SkyBooker ✈\n" +
+                "We wish you a pleasant journey.\n\n" +
+
+                "Regards,\n" +
+                "SkyBooker Team";
 
         sendEmail(email, "Booking Confirmation", emailBody);
 
@@ -114,6 +140,19 @@ public class NotifServiceImpl implements NotifService {
 
     public void sendSMS(String phone, String message) {
         System.out.println("SMS sent to " + phone + " | " + message);
+    }
+    
+    
+    @RabbitListener(queues = RabbitMQConfig.QUEUE)
+    public void consumeBookingEvent(
+            BookingNotificationEvent event) {
+
+        sendBookingConfirmation(
+                event.getUserId(),
+                event.getBookingId(),
+                event.getEmail(),
+                event.getPhone()
+        );
     }
     
     

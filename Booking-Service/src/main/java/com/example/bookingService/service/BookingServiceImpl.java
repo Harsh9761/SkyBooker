@@ -4,12 +4,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.bookingService.client.FlightClient;
 import com.example.bookingService.client.PaymentClient;
 import com.example.bookingService.client.SeatClient;
+import com.example.bookingService.config.RabbitMQConfig;
 import com.example.bookingService.dto.*;
 import com.example.bookingService.entity.*;
 import com.example.bookingService.repository.BookingRepository;
@@ -31,6 +33,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Autowired
     private FlightClient flightClient;
+    
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
    
     @Override
@@ -161,11 +166,49 @@ public class BookingServiceImpl implements BookingService {
 //                seatClient.lockSeat(booking.getFlightId(), seat);
 //            }
             
+            
+            
             String[] seats = booking.getSeatNumbers().split(",");
 
             for (String seat : seats) {
                 seatClient.lockSeat(booking.getFlightId(), seat);
             }
+            
+            
+            try {
+
+                BookingNotificationEvent event =
+                        new BookingNotificationEvent();
+
+                event.setUserId(booking.getUserId());
+
+                event.setBookingId(
+                        booking.getBookingId().toString()
+                );
+
+                event.setEmail(
+                        booking.getContactEmail()
+                );
+
+                event.setPhone(
+                        booking.getContactPhone()
+                );
+
+                rabbitTemplate.convertAndSend(
+                        RabbitMQConfig.QUEUE,
+                        event
+                );
+
+                System.out.println("RabbitMQ event sent");
+
+            } catch (Exception e) {
+
+                System.out.println(
+                        "RabbitMQ failed: " + e.getMessage()
+                );
+            }
+            
+            
 
         } else {
 
