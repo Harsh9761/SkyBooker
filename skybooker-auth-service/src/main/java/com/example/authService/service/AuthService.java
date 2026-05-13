@@ -35,7 +35,7 @@ public interface AuthService {
 
 	void activateAccount(Long userId);
 	
-	void sendRegisterOtp(String email);
+	String sendRegisterOtp(String email);
 
 	void verifyRegisterOtp(String email, String otp);
 }

@@ -148,14 +148,14 @@ public class AuthResource {
     }
     
     @PostMapping("/send-register-otp")
-    public ResponseEntity<Map<String, String>> sendRegisterOtp(
+    public ResponseEntity<String> sendRegisterOtp(
             @RequestBody OtpRequestDTO request) {
 
-        authService.sendRegisterOtp(request.getEmail());
+        String otp = authService.sendRegisterOtp(request.getEmail());
 
-        return ResponseEntity.ok(Map.of(
-                "message", "OTP sent successfully"
-        ));
+        return ResponseEntity.ok(
+                "OTP sent successfully. Your OTP is: " + otp
+        );
     }
     
     @PostMapping("/verify-register-otp")

@@ -313,7 +313,7 @@ public class AuthServiceImpl implements AuthService {
     
     
     @Override
-    public void sendRegisterOtp(String email) {
+    public String sendRegisterOtp(String email) {
 
         Optional<User> existingUser =
                 userRepository.findByEmail(email);
@@ -353,6 +353,7 @@ public class AuthServiceImpl implements AuthService {
                 "Registration OTP",
                 "Your OTP is: " + otp
         );
+        return otp;
     }
     
     
