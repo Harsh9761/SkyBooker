@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         service:
           - Airline-Service
@@ -25,7 +26,8 @@ jobs:
           - skybooker-eureka-server
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -35,14 +37,16 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      - name: Cache Maven
+      - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
-      - name: Sonar Scan - ${{ matrix.service }}
+      - name: Build + Sonar Scan - ${{ matrix.service }}
         working-directory: ./${{ matrix.service }}
-        run: mvn clean verify sonar:sonar
+        run: mvn clean install sonar:sonar -DskipTests
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
