@@ -9,7 +9,6 @@ on:
 jobs:
   sonar:
     runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
@@ -29,24 +28,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Required for SonarQube to analyze blame information
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: 17
-          distribution: temurin
-
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven' # Built-in caching for setup-java is cleaner than actions/cache
 
       - name: Build + Sonar Scan - ${{ matrix.service }}
         working-directory: ./${{ matrix.service }}
-        run: mvn clean install sonar:sonar -DskipTests
+        run: |
+          mvn clean install sonar:sonar -DskipTests \
+            -Dsonar.projectKey=skybooker_${{ matrix.service }} \
+            -Dsonar.projectName=${{ matrix.service }} \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Required for PR decoration
