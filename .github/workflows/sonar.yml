@@ -1,0 +1,48 @@
+name: SonarQube Microservices Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - Airline-Service
+          - Booking-Service
+          - Flight-Service
+          - Notification-Service
+          - Passenger-Service
+          - Payment-Service
+          - Seat-Service
+          - skybooker-auth-service
+          - SkyBooker-api-gateway
+          - skybooker-eureka-server
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+
+      - name: Sonar Scan - ${{ matrix.service }}
+        working-directory: ./${{ matrix.service }}
+        run: mvn clean verify sonar:sonar
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
