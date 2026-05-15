@@ -20,6 +20,14 @@
 
     <properties>
         <java.version>17</java.version>
+        <sonar.exclusions>
+        **/dto/**,
+        **/entity/**,
+        **/config/**,
+        **/event/**,
+        **/repository/**,
+        **/*Application.java
+    	</sonar.exclusions>
     </properties>
 
     <!-- Spring Cloud (Eureka support) -->
@@ -107,6 +115,19 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        
+                        <configuration>
+                <excludes>
+                    <!-- Notification specific exclusions -->
+                    <exclude>com/example/notificationService/dto/**</exclude>
+                    <exclude>com/example/notificationService/entity/**</exclude>
+                    <exclude>com/example/notificationService/config/**</exclude>
+                    <exclude>com/example/notificationService/event/**</exclude>
+                    <exclude>com/example/notificationService/repository/**</exclude>
+                    <exclude>com/example/notificationService/NotificationServiceApplication.class</exclude>
+                </excludes>
+            </configuration>
+                      
                     </execution>
                 </executions>
             </plugin>
