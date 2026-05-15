@@ -43,8 +43,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn -B clean verify sonar:sonar \
             -Dsonar.projectKey=Harsh9761_SkyBooker_${{ matrix.service }} \
             -Dsonar.organization=harsh9761 \
             -Dsonar.host.url=https://sonarcloud.io \
-            -DskipTests
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
