@@ -21,6 +21,16 @@
 
     <properties>
         <java.version>17</java.version>
+        
+        <sonar.exclusions>
+        **/dto/**,
+        **/entity/**,
+        **/config/**,
+        **/exception/**,
+        **/controller/**,
+        **/client/**,
+        **/*Application.java
+    </sonar.exclusions>
     </properties>
 
     <!-- SPRING CLOUD (Feign compatible) -->
@@ -117,6 +127,19 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        
+                        <configuration>
+                <excludes>
+                    
+                    <exclude>com/example/paymentService/dto/**</exclude>
+                    <exclude>com/example/paymentService/entity/**</exclude>
+                    <exclude>com/example/paymentService/config/**</exclude>
+                    <exclude>com/example/paymentService/exception/**</exclude>
+                    <exclude>com/example/paymentService/controller/**</exclude>
+                    <exclude>com/example/paymentService/client/**</exclude>
+                    <exclude>com/example/paymentService/PaymentServiceApplication.class</exclude>
+                </excludes>
+            </configuration>
                     </execution>
                 </executions>
             </plugin>

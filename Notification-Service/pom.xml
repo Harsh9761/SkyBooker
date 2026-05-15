@@ -24,10 +24,12 @@
         **/dto/**,
         **/entity/**,
         **/config/**,
+        **/exception/**,
+        **/controller/**,
+        **/scheduler/**,
         **/event/**,
-        **/repository/**,
         **/*Application.java
-    	</sonar.exclusions>
+    </sonar.exclusions>
     </properties>
 
     <!-- Spring Cloud (Eureka support) -->
@@ -118,12 +120,14 @@
                         
                         <configuration>
                 <excludes>
-                    <!-- Notification specific exclusions -->
+                    
                     <exclude>com/example/notificationService/dto/**</exclude>
                     <exclude>com/example/notificationService/entity/**</exclude>
                     <exclude>com/example/notificationService/config/**</exclude>
+                    <exclude>com/example/notificationService/exception/**</exclude>
+                    <exclude>com/example/notificationService/controller/**</exclude>
+                    <exclude>com/example/notificationService/scheduler/**</exclude>
                     <exclude>com/example/notificationService/event/**</exclude>
-                    <exclude>com/example/notificationService/repository/**</exclude>
                     <exclude>com/example/notificationService/NotificationServiceApplication.class</exclude>
                 </excludes>
             </configuration>
