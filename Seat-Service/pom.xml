@@ -20,6 +20,15 @@
 
     <properties>
         <java.version>17</java.version>
+        
+        <sonar.exclusions>
+        **/dto/**,
+        **/entity/**,
+        **/config/**,
+        **/repository/**,
+        **/exception/**,
+        **/*Application.java
+    	</sonar.exclusions>
     </properties>
 
     <!-- SPRING CLOUD (REQUIRED FOR EUREKA) -->
@@ -109,6 +118,18 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        
+                        <configuration>
+                		<excludes>
+                    		<exclude>com/example/seatService/dto/**</exclude>
+                    		<exclude>com/example/seatService/entity/**</exclude>
+                    		<exclude>com/example/seatService/config/**</exclude>
+                    		<exclude>com/example/seatService/repository/**</exclude>
+                    		<exclude>com/example/seatService/exception/**</exclude>
+                    		<exclude>com/example/seatService/SeatServiceApplication.class</exclude>
+                		</excludes>
+            		</configuration>
+                        
                     </execution>
                 </executions>
             </plugin>
