@@ -144,5 +144,58 @@ class BookingServiceImplTest {
         List<BookingResponseDTO> result = service.getUpcomingBookings(1L);
         assertEquals(1, result.size());
     }
+    
+    @Test
+    void testGetBookingByPnr_Success() {
+        Booking booking = new Booking();
+        booking.setPnrCode("ABC123");
+        booking.setStatus(BookingStatus.CONFIRMED);
+
+        when(repository.findByPnrCode("ABC123"))
+                .thenReturn(Optional.of(booking));
+
+        BookingResponseDTO result = service.getBookingByPnr("ABC123");
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void testGetBookingByPnr_NotFound() {
+        when(repository.findByPnrCode(anyString()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class,
+                () -> service.getBookingByPnr("XYZ"));
+    }
+
+    @Test
+    void testGetBookingsByUser() {
+        Booking booking = new Booking();
+        booking.setStatus(BookingStatus.CONFIRMED);
+
+        when(repository.findByUserId(1L))
+                .thenReturn(List.of(booking));
+
+        List<BookingResponseDTO> result =
+                service.getBookingsByUser(1L);
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void testGetBookingsByFlight() {
+        Booking booking = new Booking();
+        booking.setStatus(BookingStatus.CONFIRMED);
+
+        when(repository.findByFlightId(10L))
+                .thenReturn(List.of(booking));
+
+        List<BookingResponseDTO> result =
+                service.getBookingsByFlight(10L);
+
+        assertEquals(1, result.size());
+    }
+
+    
 
 }
