@@ -113,6 +113,15 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        
+                        <configuration>
+    						<excludes>
+        						<exclude>com/example/bookingService/dto/**</exclude>
+        						<exclude>com/example/bookingService/entity/**</exclude>
+        						<exclude>com/example/bookingService/config/**</exclude>
+        						<exclude>com/example/bookingService/client/**</exclude> 
+    						</excludes>
+						</configuration>
                     </execution>
                 </executions>
             </plugin>
